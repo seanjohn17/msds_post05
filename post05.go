@@ -132,7 +132,7 @@ func DeleteCourse(id int) error {
 	}
 	defer rows.Close()
 
-	if exists(CID) != id {
+	if exists(cid) != id {
 		return fmt.Errorf("Course with ID %d does not exist", id)
 	}
 
