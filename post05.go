@@ -42,8 +42,8 @@ func openConnection() (*sql.DB, error) {
 
 // The function returns the Course ID of the course
 // -1 if the course does not exist
-func exists(CID string) int {
-	CID = strings.ToLower(CID)
+func exists(cid string) int {
+	cid = strings.ToLower(cid)
 
 	db, err := openConnection()
 	if err != nil {
@@ -53,17 +53,17 @@ func exists(CID string) int {
 	defer db.Close()
 
 	courseID := -1
-	statement := fmt.Sprintf(`SELECT "ID" FROM "courses" where CID = '%s'`, CID)
+	statement := fmt.Sprintf(`SELECT "id" FROM "courses" where cid = '%s'`, cid)
 	rows, err := db.Query(statement)
 
 	for rows.Next() {
-		var ID int
-		err = rows.Scan(&ID)
+		var id int
+		err = rows.Scan(&id)
 		if err != nil {
 			fmt.Println("Scan", err)
 			return -1
 		}
-		courseID = ID
+		courseID = id
 	}
 	defer rows.Close()
 	return courseID
@@ -88,7 +88,7 @@ func AddCourse(d MSDSCourse) int {
 		return -1
 	}
 
-	insertStatement := `insert into "courses" ("CID") values ($1)`
+	insertStatement := `insert into "courses" ("cid") values ($1)`
 	_, err = db.Exec(insertStatement, d.CID)
 	if err != nil {
 		fmt.Println(err)
@@ -100,7 +100,7 @@ func AddCourse(d MSDSCourse) int {
 		return courseID
 	}
 
-	insertStatement = `insert into "coursedata" ("ID", "CID", "CNAME", "CPREREQ")
+	insertStatement = `insert into "coursedata" ("id", "cid", "cname", "cprereq")
 	values ($1, $2, $3, $4)`
 	_, err = db.Exec(insertStatement, courseID, d.CID, d.CNAME, d.CPREREQ)
 	if err != nil {
@@ -120,12 +120,12 @@ func DeleteCourse(id int) error {
 	defer db.Close()
 
 	// Does the ID exist?
-	statement := fmt.Sprintf(`SELECT "CID" FROM "courses" where id = %d`, id)
+	statement := fmt.Sprintf(`SELECT "cid" FROM "courses" where id = %d`, id)
 	rows, err := db.Query(statement)
 
-	var CID string
+	var cid string
 	for rows.Next() {
-		err = rows.Scan(&CID)
+		err = rows.Scan(&cid)
 		if err != nil {
 			return err
 		}
@@ -137,7 +137,7 @@ func DeleteCourse(id int) error {
 	}
 
 	// Delete from MSDSCourse
-	deleteStatement := `delete from "coursedata" where ID=$1`
+	deleteStatement := `delete from "coursedata" where courseid=$1`
 	_, err = db.Exec(deleteStatement, id)
 	if err != nil {
 		return err
@@ -162,9 +162,9 @@ func ListCourses() ([]MSDSCourse, error) {
 	}
 	defer db.Close()
 
-	rows, err := db.Query(`SELECT "ID","CID","CNAME","CPREREQ"
+	rows, err := db.Query(`SELECT "id","cid","cname","cprereq"
 		FROM "courses","coursedata"
-		WHERE courses.CID = coursedata.CID`)
+		WHERE courses.cid = coursedata.cid`)
 	if err != nil {
 		return Data, err
 	}
